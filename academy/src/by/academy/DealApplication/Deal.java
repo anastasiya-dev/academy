@@ -1,16 +1,22 @@
 package by.academy.DealApplication;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 @DealSettings(numProducts = 2)
 
-public class Deal {
+public class Deal <P extends Product>{
 		
-	Product [] products;
-	User buyer;
-	User seller;
+	ArrayList<P> products;
+	User<P> buyer;
+	User<P> seller;
 	boolean supplyEnough;
 	Calendar deadlineDate;
+	static int DealNumber = 0;
+	int DealID;
 	
 	
 	public Deal() {
@@ -18,35 +24,37 @@ public class Deal {
 		setDeadlineDate();
 	}
 	
-	public Deal(Product [] products, User buyer, User seller) {
+	public Deal(ArrayList<P> products, User<P> buyer, User<P> seller) {
 		super();
 		this.products = products;
 		this.buyer = buyer;
 		this.seller = seller;
 		setDeadlineDate();
+		DealNumber++;
+		this.DealID = DealNumber;
 	}
 
-	public Product[] getProducts() {
+	public ArrayList<P> getProducts() {
 		return products;
 	}
 
-	public void setProducts(Product[] products) {
+	public void setProducts(ArrayList<P> products) {
 		this.products = products;
 	}
 
-	public User getBuyer() {
+	public User<P> getBuyer() {
 		return buyer;
 	}
 
-	public void setBuyer(User buyer) {
+	public void setBuyer(User<P> buyer) {
 		this.buyer = buyer;
 	}
 
-	public User getSeller() {
+	public User<P> getSeller() {
 		return seller;
 	}
 
-	public void setSeller(User seller) {
+	public void setSeller(User<P> seller) {
 		this.seller = seller;
 	}
 	
@@ -60,42 +68,27 @@ public class Deal {
 		this.deadlineDate = todayTechnical;		
 	}
 	
-	public double calcFullPrice(Product[] products) {
+	public double calcFullPrice(ArrayList<P> products) {
 		double fullPrice = 0;
-		for (int i = 0; i < products.length; i++) {
-			fullPrice += products[i].getPrice() * products[i].getQuantity();
+		for (int i = 0; i < products.size(); i++) {
+			fullPrice += products.get(i).getPrice() * products.get(i).getQuantity();
 		}
 		return fullPrice;
 	}
 	
-	public boolean supplyCheck() {
-		boolean supplySupport;
-		for (int i = 0; i < products.length; i++) {
-			for (int j = 0; j < seller.getProducts().length; j++) {
-				if(products[i].getName() == seller.getProducts()[j].getName()) {
-					if(products[i].getQuantity() > seller.getProducts()[j].getQuantity()) {
-						products[i].setQuantity(seller.getProducts()[j].getQuantity());
-						if(products[i].getQuantity() != 0) {
-							System.out.println("Unfortunately only " + products[i].getQuantity() + " of " + products[i].getName() + " is availiable");
+	public boolean supplyCheck() {	
+		for (int i = 0; i < products.size(); i++) {
+			for (int j = 0; j < seller.getProducts().size(); j++) {
+				if(products.get(i).getName() == ((Product) seller.getProducts().get(j)).getName()) {
+					if(products.get(i).getQuantity() > ((Product) seller.getProducts().get(j)).getQuantity()) {
+						products.get(i).setQuantity(((Product) seller.getProducts().get(j)).getQuantity());
+						if(products.get(i).getQuantity() != 0) {
+							System.out.println("Unfortunately only " + products.get(i).getQuantity() + " of " + products.get(i).getName() + " is availiable");
 						}						
 					}					
 				}
 			}				
 		}
-		//не дописано пока
-//		for(int i = 0; i < products.length; i++) {
-//			if(p.getQuantity() == 0) {
-//				supplyEnough = false;
-//				
-//			}
-//			
-//			System.out.println("Sorry, there're no necessary products availiable");
-//			if(supplyEnough == true)
-//				
-//			if(p.getQuantity() != 0) {
-//				System.out.println("All the necessary products are in supply");
-//			}
-//		}
 		
 		return supplyEnough;
 	}
@@ -105,7 +98,7 @@ public class Deal {
 		System.out.println("Deprecated method");
 	}
 	
-	public void makeDeal() {
+	public void makeDeal()  {
 		supplyCheck();
 		if (calcFullPrice (products) <= buyer.getMoneyQ()) {
 			buyer.setmoneyQ(buyer.getMoneyQ() - calcFullPrice(products));
@@ -113,29 +106,38 @@ public class Deal {
 			StringBuilder cheque = new StringBuilder();
 			cheque.append("Our deal: ");
 			cheque.append("\n");
-			for (int i = 0; i < products.length; i++) {
-				cheque.append(products[i].getName());
+			for (int i = 0; i < products.size(); i++) {
+				cheque.append(products.get(i).getName());
 				cheque.append(" in the quantity of ");
-				cheque.append(products[i].getQuantity());
+				cheque.append(products.get(i).getQuantity());
 				cheque.append(" at price ");
-				cheque.append(products[i].getPrice());
+				cheque.append(products.get(i).getPrice());
 				cheque.append("\n");
+			}			
+			
+			File dir = new File("src\\by\\academy\\DealApplication");
+			File file = new File(dir,"cheque" + DealID + ".txt");
+			if(!file.exists()) {
+				file.mkdir();
 			}
+			
+			try(PrintWriter pw = new PrintWriter(file)){
+				pw.print(cheque);
+			}
+			catch(FileNotFoundException e) {
+				e.getMessage();
+			}			
+			
 			System.out.println(cheque);
 			System.out.println("Deal total price: " + calcFullPrice(products));
 			System.out.println("Buyer remaining cash: " + buyer.getMoneyQ());
 			System.out.println("Seller remaining products: ");
-			for (int i = 0; i < seller.getProducts().length; i++) {
-				seller.getProducts()[i].setQuantity(seller.getProducts()[i].getQuantity() - products[i].getQuantity());
-				System.out.println(seller.getProducts()[i].getName() + " in the quantity of " + seller.getProducts()[i].getQuantity() + " at price " + seller.getProducts()[i].getPrice());
+			for (int i = 0; i < seller.getProducts().size(); i++) {
+				((Product) seller.getProducts().get(i)).setQuantity(((Product) seller.getProducts().get(i)).getQuantity() - products.get(i).getQuantity());
+				System.out.println(((Product) seller.getProducts().get(i)).getName() + " in the quantity of " + ((Product) seller.getProducts().get(i)).getQuantity() + " at price " + ((Product) seller.getProducts().get(i)).getPrice());
 			}
 			System.out.println("Now seller has " + seller.getMoneyQ());
-//			for (int i = 0; i < products.length; i++) {
-//				if (products[i].getQuantity() == null) {
-//					
-//				}
-//				
-//			}
+
 	}
 		else {
 			System.out.println("Deal cannot be completed");

@@ -2,16 +2,17 @@ package by.academy.DealApplication;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Scanner;
 
-import by.academy.lesson7.Task5.BelarusPhoneValidator;
-import by.academy.lesson7.Task5.EmailValidator;
+import by.academy.lesson7.Homework3.Task5.BelarusPhoneValidator;
+//import by.academy.lesson7.Homework3.Task5.EmailValidator;
 
-public class User {
+public class User <P extends Product>{
 	String name;
-	Product [] products;
+	ArrayList<P> products;
 	double moneyQ;
 	Calendar dateOfBirth;
 	String phone;
@@ -22,7 +23,7 @@ public class User {
 		setDateOfBirth();		
 	}
 	
-	public User(String name, Product [] products, double moneyQ) {
+	public User(String name, ArrayList<P> products, double moneyQ) {
 		super();
 		this.name = name;
 		this.products = products;
@@ -30,11 +31,11 @@ public class User {
 		setDateOfBirth();
 	}
 	
-	public Product[] getProducts() {
+	public ArrayList<P> getProducts() {
 		return products;
 	}
 
-	public void setProducts(Product[] products) {
+	public void setProducts(ArrayList<P> products) {
 		this.products = products;
 	}
 
@@ -80,13 +81,14 @@ public class User {
 	}
 
 	public void setEmail(String email) {
-		EmailValidator emailV1 = new EmailValidator();
-		if(emailV1.validate(email)) {
-			this.email = email;
-		}
-		else {
-			this.email = "no info";
-		}
+////		EmailValidator emailV1 = new EmailValidator();
+//		if(emailV1.validate(email)) {
+//			this.email = email;
+//		}
+//		else {
+//			this.email = "no info";
+//		}
+		this.email = email;
 	}
 	
 	public static Calendar checkDate() {

@@ -1,33 +1,57 @@
 package by.academy.DealApplication;
 
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import by.academy.lesson7.Homework3.Task5.Validator;
 
 public class Program {
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException {
 		
 		Wine wineS = new Wine (5, "Chardonnay", 100);
 		Cheese cheeseS = new Cheese (2, "Gauda", 100);
 		Wine wineD = new Wine (5, "Chardonnay", 3);
 		Cheese cheeseD = new Cheese (2, "Gauda", 4);
 		
-		Product[] sellerProducts = {wineS, cheeseS};
-		Product[] dealProducts = {wineD, cheeseD};
+		ArrayList<Product> sellerProducts = new ArrayList<Product>();
+		sellerProducts.add(wineS);
+		sellerProducts.add(cheeseS);
+		ArrayList<Product> dealProducts = new ArrayList<Product>();
+		dealProducts.add(cheeseD);
+		dealProducts.add(wineD);
+					
+		User<Product> buyer1 = new User<> ("A", null, 100);
+		User<Product> seller1 = new User<> ("B", sellerProducts, 10);
 		
-		User buyer1 = new User ("A", null, 100);
-		User seller1 = new User ("B", sellerProducts, 10);
-		
-		Deal deal1 = new Deal (dealProducts, buyer1, seller1);
+		Deal <Product>deal1 = new Deal <>(dealProducts, buyer1, seller1);
 		deal1.makeDeal();
+		buyer1.setEmail("anastasiya.kalach@gmail.com");
 		
 //		deal1.makeDealUSSR();
 //		Class<? extends Deal> dc = deal1.getClass();
 //		DealSettings ds = (DealSettings) dc.getAnnotation(DealSettings.class);
 //		System.out.println(ds.Legality());
 		
-		menu(dealProducts);		
+		menu(dealProducts);
+		
+		Validator emailValidator = new Validator() {
+
+			@Override
+			public boolean validate(String email) {		
+				Pattern p = Pattern.compile("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$");
+				Matcher matcher = p.matcher(email);				
+				return matcher.find();
+			}
+			
+		};
+		
+		System.out.println(emailValidator.validate(buyer1.getEmail()));
 	}
-	public static void menu(Product[] dealProducts) {
+	public static <P> void menu(ArrayList<P> dealProducts) {
 		Scanner scan = new Scanner(System.in);
 		int operationChoiceInt = 0;
 		String operationChoice = "";
@@ -57,7 +81,7 @@ public class Program {
 				
 				switch (productType) {
 				case "Wine":
-					newProduct = new Wine();
+					newProduct = new Wine();					
 					break;
 				case "Cheese":
 					newProduct = new Cheese();
@@ -66,23 +90,24 @@ public class Program {
 					newProduct = new Product();
 					System.out.println("No specification for such product yet");
 				}
+				dealProducts.add((P) newProduct);
 				newProduct.setName(name);
 				newProduct.setPrice(Double.valueOf(price));
 				newProduct.setQuantity(Integer.valueOf(quantity));
+				break;
 			case 2:
 				System.out.println("Enter the name of the product to delete:");
 				productNameDel = scan.next();
-				for (int i = 0; i < dealProducts.length; i++) {
-					if(dealProducts[i].getName().equals(productNameDel)) {
-						for (int j = i; j < dealProducts.length - 1; j++) {
-						dealProducts[j] = dealProducts[j + 1];
-						}
-						dealProducts[dealProducts.length - 1] = null;
-					}					
-				break;			
-				}
-			}
-		System.out.println("Menu closed");		
+				for(int i = 0; i < dealProducts.size(); i++) {
+
+					if(((Product) dealProducts.get(i)).getName().contentEquals(productNameDel)) {
+						dealProducts.remove(dealProducts.get(i));
+					}
+				}			
+				break;
+			case 3:
+				System.out.println("Menu closed");
+			}				
 		}
 	}
 	private static String keyboard(Scanner scan, String message) {
